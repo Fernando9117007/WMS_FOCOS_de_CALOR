@@ -1,77 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visor Interactivo con Leaflet + GEE</title>
-
-  <!-- Incluir Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- Incluir la API JavaScript de Google Earth Engine -->
-  <script src="https://cdn.jsdelivr.net/npm/earthengine-api@0.1.323/ee_api.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Visor FIRMS + Leaflet</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <style>
-    #map { height: 600px; width: 100%; }
+    #map { height: 100vh; }
   </style>
 </head>
 <body>
 
   <div id="map"></div>
 
-  <script>
-    // Inicializar el mapa de Leaflet
-    var map = L.map('map').setView([-17.8, -63.1], 6); // Ajusta las coordenadas a tu zona de interés
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-    // Agregar capa base de OpenStreetMap
+  <script>
+    // Inicializar el mapa
+    var map = L.map('map').setView([-17.8, -63.1], 6); // Ajusta el centro a tu región
+
+    // Agregar capa base OSM
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Agregar FIRMS como WMS (últimas 24h, VIIRS 375m)
-var wmsLayer = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms/', {
-  layers: 'fires_viirs_24',
-  format: 'image/png',
-  transparent: true,
-  attribution: 'NASA FIRMS'
-}).addTo(map);
-
-
-    // Autenticación de Google Earth Engine
-    function authenticate() {
-      ee.data.authenticateViaPopup(function() {
-        console.log('Autenticación exitosa');
-        initializeGEE();
-      }, function(error) {
-        console.error('Error de autenticación:', error);
-      });
-    }
-
-    // Inicializar Earth Engine
-    function initializeGEE() {
-      ee.initialize(null, null, function() {
-        console.log('Earth Engine inicializado');
-        cargarDatosGEE();
-      }, function(error) {
-        console.error('Error al inicializar GEE:', error);
-      });
-    }
-
-    // Cargar y visualizar datos desde GEE
-    function cargarDatosGEE() {
-      var area = ee.Geometry.Point([-63.1, -17.8]); // Ajusta la geometría al área de interés
-      var coleccion = ee.ImageCollection("MODIS/006/MOD13Q1").filterBounds(area).first(); // Carga una imagen de MODIS
-
-      var visParams = {min: 0, max: 9000, palette: ['blue', 'green', 'red']};
-      var image = coleccion.visualize(visParams);
-
-      // Agregar capa de Earth Engine al mapa
-      L.imageOverlay(image.getMap(), image.geometry().bounds()).addTo(map);
-    }
-
-    // Iniciar la autenticación de GEE
-    authenticate();
+    // Agregar capa WMS de FIRMS (VIIRS 375m - últimos 24h)
+    var firmsWMS = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms/', {
+      layers: 'fires_viirs_24', // Últimas 24 horas
+      format: 'image/png',
+      transparent: true,
+      attribution: 'NASA FIRMS'
+    }).addTo(map);
   </script>
 
 </body>
