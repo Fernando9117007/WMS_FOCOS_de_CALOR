@@ -3,37 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Visor FIRMS + Leaflet</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <title>Visor FIRMS + GIBS con Leaflet</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
-    #map { height: 100vh; }
+    body { margin: 0; padding: 0; }
+    #map { width: 100vw; height: 100vh; }
   </style>
 </head>
 <body>
 
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-
   <script>
-    // Inicializar el mapa
-    var map = L.map('map').setView([-17.8, -63.1], 6); // Ajusta el centro a tu región
+    // Inicializar el mapa centrado en Santa Cruz, Bolivia
+    var map = L.map('map').setView([-17.8, -63.1], 6);
 
-    // Agregar capa base OSM
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Capa base de OpenStreetMap
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Agregar capa WMS de FIRMS (VIIRS 375m - últimos 24h)
-    var firmsWMS = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms/', {
-      layers: 'fires_viirs_24', // Últimas 24 horas
+    // Capa WMS de FIRMS (focos de calor VIIRS 24h)
+    var firmsLayer = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms/', {
+      layers: 'fires_viirs_24',
       format: 'image/png',
       transparent: true,
       attribution: 'NASA FIRMS'
     }).addTo(map);
+
+    // Capa WMS desde GIBS - Color real MODIS Terra
+    var gibsLayer = L.tileLayer.wms('https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?', {
+      layers: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+      format: 'image/png',
+      transparent: true,
+      time: '2024-05-13', // puedes cambiar a una fecha actual si quieres
+      attribution: 'NASA GIBS'
+    });
+
+    // Control de capas
+    var baseMaps = {
+      "OpenStreetMap": osm
+    };
+
+    var overlayMaps = {
+      "FIRMS (VIIRS 24h)": firmsLayer,
+      "MODIS (Color Real)": gibsLayer
+    };
+
+    L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
   </script>
 
 </body>
