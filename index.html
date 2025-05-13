@@ -29,13 +29,14 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Cargar WMS de FIRMS (por ejemplo, focos de calor VIIRS)
-    var wmsLayer = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms', {
-      layers: 'viirs', // Capa FIRMS VIIRS
-      format: 'image/png',
-      transparent: true,
-      attribution: 'NASA FIRMS'
-    }).addTo(map);
+    // Agregar FIRMS como WMS (últimas 24h, VIIRS 375m)
+var wmsLayer = L.tileLayer.wms('https://firms.modaps.eosdis.nasa.gov/wms/', {
+  layers: 'fires_viirs_24',
+  format: 'image/png',
+  transparent: true,
+  attribution: 'NASA FIRMS'
+}).addTo(map);
+
 
     // Autenticación de Google Earth Engine
     function authenticate() {
