@@ -1,41 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mapa oscuro con GEE y Leaflet</title>
-  <!-- Cargar Leaflet (CSS y JS) -->
+  <title>Mapa GEE + Leaflet (Modo Oscuro)</title>
+  <!-- Leaflet CSS/JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <!-- Cargar la API de GEE -->
+  <!-- Google Earth Engine API -->
   <script src="https://code.earthengine.google.com/"></script>
+  <!-- Leaflet-EE (conector) -->
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-ee@latest/dist/leaflet-ee.min.js"></script>
   <style>
-    #map { height: 100vh; width: 100%; } /* Tamaño del mapa */
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+    /* Estilo para controles oscuros */
+    .leaflet-control { background-color: rgba(0, 0, 0, 0.7) !important; color: white; }
   </style>
 </head>
 <body>
-  <!-- Contenedor del mapa -->
   <div id="map"></div>
 
   <script>
-    // Inicializar el mapa de Leaflet con un fondo oscuro
+    // 1. Inicializar mapa Leaflet con fondo oscuro (CartoDB Dark Matter)
     var map = L.map('map').setView([0, 0], 2); // Centro y zoom inicial
-
-    // Añadir mapa base oscuro (CartoDB Dark Matter)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
       attribution: '© CartoDB'
     }).addTo(map);
 
-    // Autenticación con GEE
-    ee.initialize();
-
-    // Cargar un dataset de GEE (ej: NDVI)
-    var dataset = ee.Image('MODIS/006/MOD13A2/20220101').select('NDVI');
-    var visParams = { min: 0, max: 9000, palette: ['FFFFFF', 'CE7E45', 'DF923D', 'F1B555', 'FCD163', '99B718'] };
-
-    // Añadir la imagen de GEE al mapa (usando el plugin "leaflet-ee")
-    var overlay = L.eeLayer(dataset, visParams).addTo(map);
+    // 2. Autenticación con GEE (popup de permisos)
+    function initGEE() {
+      ee.data.authenticateViaPopup(function() {
+        ee.initialize(null, null, function() {
+          // 3. Añadir capa de GEE (ejemplo: NDVI)
+          var ndvi = ee.Image('MODIS/006/MOD13A2/20220101').select('NDVI');
+          var visParams = { min: 0, max: 9000, palette: ['red', 'yellow', 'green'] };
+          
+          // 4. Superponer capa de GEE al mapa
+          var overlay = L.eeLayer(ndvi, visParams).addTo(map);
+        });
+      });
+    }
+    initGEE();
   </script>
-  
-  <!-- Cargar el plugin "leaflet-ee" para conectar Leaflet y GEE -->
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-ee@latest/dist/leaflet-ee.min.js"></script>
 </body>
 </html>
